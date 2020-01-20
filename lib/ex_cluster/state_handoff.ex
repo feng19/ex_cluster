@@ -43,14 +43,14 @@ defmodule ExCluster.StateHandoff do
   # other_node is actuall a tuple { __MODULE__, other_node } passed from above,
   #  by using that in GenServer.call we are sending a message to the process
   #  named __MODULE__ on other_node
-  def handle_call({ :add_neighbours, other_node }, from, this_crdt_pid) do
+  def handle_call({ :add_neighbours, other_node }, _from, this_crdt_pid) do
     Logger.warn("Sending :add_neighbours to #{inspect other_node} with #{inspect this_crdt_pid}")
     # pass our crdt pid in a message so that the crdt on other_node can add it as a neighbour
     # expect other_node to send back it's crdt_pid in response
     other_crdt_pid = GenServer.call(other_node, { :fulfill_add_neighbours, this_crdt_pid })
     # add other_node's crdt_pid as a neighbour, we need to add both ways so changes in either
     # are reflected across, otherwise it would be one way only
-    DeltaCrdt.add_neighbours(this_crdt_pid, [other_crdt_pid])
+    DeltaCrdt.set_neighbours(this_crdt_pid, [other_crdt_pid])
     { :reply, :ok, this_crdt_pid }
   end
 
@@ -59,7 +59,7 @@ defmodule ExCluster.StateHandoff do
   def handle_call({ :fulfill_add_neighbours, other_crdt_pid }, _from, this_crdt_pid) do
     Logger.warn("Adding neighbour #{inspect other_crdt_pid} to this #{inspect this_crdt_pid}")
     # add the crdt's as a neighbour, pass back our crdt to the original adding node via a reply
-    DeltaCrdt.add_neighbours(this_crdt_pid, [other_crdt_pid])
+    DeltaCrdt.set_neighbours(this_crdt_pid, [other_crdt_pid])
     { :reply, this_crdt_pid, this_crdt_pid }
   end
 

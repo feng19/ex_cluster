@@ -22,8 +22,7 @@ defmodule ExCluster.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      { :horde, "~> 0.3.0" },
-      { :distillery, "~> 2.0" },
+      { :horde, "~> 0.7.0" },
       { :libcluster, "~> 3.0" }
     ]
   end
